@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-and-push
+  namespace: "pl" # {"$kpt-set":"namespace"}
+spec:
+  workspaces:
+  - name: source
+    mountPath: /source
+  params:
+  - name: pathToContext
+    description: The build context for the image being built.
+    default: php-redis
+  - name: ci_directory
+    description: Subdirectory inside "source" workspace that contains the CI pipeline.
+    default: "."
+  - name: app_directory
+    description: Subdirectory inside "source" workspace that contains the application.
+    default: "."
+  - name: gcr_img
+    description: Name (reference) of one of the directories in /overlay.
+  - name: pathToCI
+    description: Path from the head of the source repository to the CI pipeline.
+    default: "ci" # {"$kpt-set":"path_to_ci"}
+  steps:
+  - name: hydrate-config
+    image: gcr.io/yuwenma-gke-playground/kustomize
+    command:
+    - kustomize
+    - build
+    args:
+    - $(workspaces.source.path)/$(params.ci_directory)/$(params.pathToCI)/overlay/$(params.gcr_img)
+    - -o
+    - $(workspaces.source.path)/$(params.app_directory)/$(params.pathToContext)/skaffold.yaml
+  - name: build-and-push
+    image: gcr.io/k8s-skaffold/skaffold:v1.12.1
+    workingDir: $(workspaces.source.path)/$(params.app_directory)/$(params.pathToContext)
+    command:
+    - skaffold
+    - build

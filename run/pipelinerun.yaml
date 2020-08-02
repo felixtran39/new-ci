@@ -1,0 +1,13 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: 'ci-run' # {"$kpt-set":"pipeline-run"}
+  namespace: 'pl' # {"$kpt-set":"namespace"}
+spec:
+  serviceAccountName: 'tranf-ksa' # {"$kpt-set":"serviceaccount"}
+  pipelineRef:
+    name: demo-pipeline
+  workspaces:
+  - name: shared-workspace
+    persistentVolumeClaim:
+      claimName: workspace-pvc

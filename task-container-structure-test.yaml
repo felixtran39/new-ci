@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: container-structure-test
+  namespace: "pl" # {"$kpt-set":"namespace"}
+spec:
+  workspaces:
+  - name: source
+    mountPath: /source
+  params:
+  - name: pathToConfig
+    default: config.json # {"$kpt-set":"config_path"}
+    description: The path to a config file that contains container structure tests.
+      Relative to the workspace/app_directory.
+  - name: app_directory
+    default: application
+    description: Subdirectory inside "source" workspace that contains the application.
+  - name: testImage
+    default: "gcr.io/yuwenma-gke-playground/pl-redis-slave" # {"$kpt-set":"gcr_img_1"}
+    description: The gcr image to test.
+  steps:
+  - name: file-exist-test
+    image: gcr.io/gcp-runtimes/container-structure-test
+    command:
+    - /container-structure-test
+    args:
+    - test
+    - --image=$(params.testImage)
+    - --config=$(workspaces.source.path)/$(params.app_directory)/$(params.pathToConfig)
+    - --driver=tar

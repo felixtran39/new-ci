@@ -1,0 +1,10 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+metadata:
+  name: config
+build:
+  tagPolicy:
+    gitCommit: {}
+  cluster:
+    pullSecretPath: kaniko-secret.json
+    namespace: 'pl' # {"$kpt-set":"namespace"}

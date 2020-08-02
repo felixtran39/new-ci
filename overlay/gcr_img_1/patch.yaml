@@ -1,0 +1,7 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+metadata:
+  name: config
+build:
+  artifacts:
+  - image: "gcr.io/yuwenma-gke-playground/pl-redis-slave" # {"$kpt-set":"gcr_img_1"}

@@ -1,0 +1,87 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: demo-pipeline
+  namespace: 'pl' # {"$kpt-set":"namespace"}
+spec:
+  workspaces:
+  - name: shared-workspace
+  tasks:
+  # tekton git catalog. A beta replacement of pipelineResource (v1alpha1) .
+  - name: fetch-pipeline-repository
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: 'git@github.com:felixtran39/blueprint-ci.git' # {"$kpt-set":"src_repo"}
+    - name: subdirectory
+      value: pipeline-checkout
+    - name: deleteExisting
+      value: "true"
+  - name: fetch-application-repository
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: 'https://github.com/felixtran39/helloworld.git' # {"$kpt-set":"app_repo"}
+    - name: subdirectory
+      value: application
+    - name: deleteExisting
+      value: "true"
+    runAfter:
+    - fetch-pipeline-repository
+  - name: build-gcr-img-1
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    params:
+    - name: pathToContext
+      value: 'redis-slave' # {"$kpt-set":"context_img_1"}
+    - name: ci_directory
+      value: pipeline-checkout
+    - name: app_directory
+      value: application
+    - name: gcr_img
+      value: gcr_img_1
+    taskRef:
+      name: build-and-push
+    runAfter:
+    - fetch-application-repository
+  - name: build-gcr-img-2
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    params:
+    - name: pathToContext
+      value: 'php-redis' # {"$kpt-set":"context_img_2"}
+    - name: ci_directory
+      value: pipeline-checkout
+    - name: app_directory
+      value: application
+    - name: gcr_img
+      value: gcr_img_2
+    taskRef:
+      name: build-and-push
+    runAfter:
+    - build-gcr-img-1
+  - name: test-gcr-img-2
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    params:
+    - name: pathToConfig
+      value: config.json # {"$kpt-set":"config_path"}
+    - name: app_directory
+      value: application
+    - name: testImage
+      value: "gcr.io/yuwenma-gke-playground/pl-redis-slave" # {"$kpt-set":"gcr_img_1"}
+    taskRef:
+      name: container-structure-test
+    runAfter:
+    - build-gcr-img-2

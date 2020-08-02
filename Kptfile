@@ -1,0 +1,100 @@
+apiVersion: kpt.dev/v1alpha1
+kind: Kptfile
+metadata:
+  name: .
+packageMetadata:
+  shortDescription: sample description
+openAPI:
+  definitions:
+    io.k8s.cli.setters.namespace:
+      x-k8s-cli:
+        setter:
+          name: namespace
+          value: 'pl'
+          required: true
+          description: The namespace of the tekton resources.
+    io.k8s.cli.setters.src_repo:
+      x-k8s-cli:
+        setter:
+          name: src_repo
+          value: 'git@github.com:felixtran39/blueprint-ci.git'
+          required: true
+          description: The URL of the source (CI) repository.
+          isSet: true
+    io.k8s.cli.setters.app_repo:
+      x-k8s-cli:
+        setter:
+          name: app_repo
+          value: 'https://github.com/felixtran39/helloworld.git'
+          required: true
+          description: The URL of the application repository.
+    io.k8s.cli.setters.gcr_img_1:
+      x-k8s-cli:
+        setter:
+          name: gcr_img_1
+          value: 'gcr.io/yuwenma-gke-playground/pl-redis-slave'
+          required: true
+          description: The name of an image to be built, tagged, and pushed.
+    io.k8s.cli.setters.gcr_img_2:
+      x-k8s-cli:
+        setter:
+          name: gcr_img_2
+          value: 'gcr.io/yuwenma-gke-playground/pl-php-redis'
+          required: true
+          description: The name of an image to be built, tagged, and pushed.
+    io.k8s.cli.setters.context_img_1:
+      x-k8s-cli:
+        setter:
+          name: context_img_1
+          value: 'redis-slave'
+          required: true
+          description: The context of an image.
+    io.k8s.cli.setters.context_img_2:
+      x-k8s-cli:
+        setter:
+          name: context_img_2
+          value: 'php-redis'
+          required: true
+          description: The context of an image.
+    io.k8s.cli.setters.config_path:
+      x-k8s-cli:
+        setter:
+          name: config_path
+          value: config.json
+          required: true
+          description: The path to a config file that contains container structure
+            tests.
+    io.k8s.cli.setters.serviceaccount:
+      x-k8s-cli:
+        setter:
+          name: serviceaccount
+          value: 'tranf-ksa'
+          description: Service account used to build images in the user's cluster.
+    io.k8s.cli.setters.pipeline-run:
+      x-k8s-cli:
+        setter:
+          name: pipeline-run
+          value: ci-run
+          description: Name of the pipelinerun for the CI pipeline.
+    io.k8s.cli.substitutions.prefix_img_1:
+      x-k8s-cli:
+        substitution:
+          name: prefix_img_1
+          pattern: ${gcr_img_1}-
+          values:
+          - marker: ${gcr_img_1}
+            ref: '#/definitions/io.k8s.cli.setters.gcr_img_1'
+    io.k8s.cli.substitutions.prefix_img_2:
+      x-k8s-cli:
+        substitution:
+          name: prefix_img_2
+          pattern: ${gcr_img_2}-
+          values:
+          - marker: ${gcr_img_2}
+            ref: '#/definitions/io.k8s.cli.setters.gcr_img_2'
+    io.k8s.cli.setters.path_to_ci:
+      x-k8s-cli:
+        setter:
+          name: path_to_ci
+          value: ci
+          description: The path to the CI pipeline from the head of the source repository.

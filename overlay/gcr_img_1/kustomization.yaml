@@ -1,0 +1,5 @@
+resources:
+- '../../base'
+namePrefix: 'gcr.io/yuwenma-gke-playground/pl-redis-slave-' # {"$kpt-set":"prefix_img_1"}
+patchesStrategicMerge:
+- patch.yaml
